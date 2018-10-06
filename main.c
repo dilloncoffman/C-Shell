@@ -13,9 +13,6 @@
 extern char **environ; // for printing env strings/accessing dirs
 extern int errno; // for error handling
 
-#define PARSE_BUFF_SIZE 100
-#define PARSE_DELIMS " \r\t\a\n"
-
 /* function prototypes */
 //char* readCommand();
 //char** parseLine(char *line);
@@ -48,65 +45,80 @@ struct InternalCommand commands[] = {
 
 
 int main(int argc, char *argv[100]) {
-
-	/*
-		IF argv[0] > 0
-			then there is a batch file to execute it's commands with
-	*/
-
-
 	//initialize variables needed
 	char line[100]; // line to parse from user (separate commands from arguments)
+	char cwd[100]; // used for printing current working directory after each command (cd'ing to new dir etc.)
 	//char* argv[100]; // holds all arguments to be passed to commands
 	//argc = 0; // argc is 0 before line read in
 	//int argc; // keeps track of number of arguments passed in (argument count)
 	int status; // used when creating other processes to determine if they executed or failed
 
-	//perform endless loop until shell detects an EOF condition
-	while(1) {
-		printf("dillon@shell> "); // print prompt
-
-		// Read command from standard input, exit on EOF conditions (Ctrl + D & "exit")
-		if (fgets(line, sizeof(line), stdin) == NULL) break; // get command from stdin, breaks if Ctrl + D entered
-		fprintf(stdout, "Command entered: %s\n", line); //print command to stdout
-        if (line[strlen(line)-1] == '\n') { // remove trailing newline if there is one
-            line[strlen(line)-1] = '\0'; // replace that newline with null
-        }
-
-		
-		int i = 0;
-		while (line[i] != '\0') {
-			printf("%c\n", line[i]);
-			i++;
+	if (argc >= 2) { // if argc at this point equals greater than or equal to 2 then we know we need to read commands from a file instead of user input
+		printf("Argc at start of program before any user input: %d\n\n", argc);
+		printf("Argv at start of program before any user input (if this exists means we must execute commands from commands in some input file): %s\n\n", argv[1]);
+		char* inputFileName = argv[1]; // save input file name to used (this is to ensure the name is not lost through executions and can be used in printing statements (for testing or error logging) later on)
+		FILE *inputFile_ptr = fopen(inputFileName, "r"); // attempt to open file for reading
+		char inputFileContent[200];
+		if (inputFile_ptr == NULL) { // check to see if file failed to open
+			fprintf(stdout, "No input file by the name \"%s\" found..\n", inputFileName); // print error
+			return 0; // end program
+		} else { // file opened successfully
+			// read file and line by line execute it's commands
+			fprintf(stdout, "Input file: %s opened successfully! Ready to execute commands from input file!\n", inputFileName);
+			while(!feof(inputFile_ptr)) {
+				if(fgets(inputFileContent, 200, inputFile_ptr)) {
+					parseCommand(inputFileContent, argv, &argc); // parse line from file
+					if (executeCommand(argv) == 0) break; // attempt to execute line from file based off parsed arguments in argv
+				}
+			}
 		}
-		printf("Home directory: %s\n", getenv("HOME")); // TEST
-
-
-
-		parseCommand(line, argv, &argc);
-
-
-
-		printf("ARGC: %d\n", argc); // TEST
-		i = 0;
-		while (argv[i] != '\0') {
-			printf("ARGV: %s\n", argv[i]);
-			i++;
-		}
-		
-		printf("Length of line entered: %lu\n", strlen(line));
-		
-		if (executeCommand(argv) == 0) break; // attempt to execute command based off parsed arguments argv
-        
-		// separate command from arguments - parse the line's arguments into argv
-
-		// Exit and free any memory necessary
-
+		fprintf(stdout, "\nSuccessfully executed commands from input file: %s - now exiting..\n", inputFileName);
+		return 0; // at end of executing commands from input file, exit shell
 	}
-	//free(&line);
-	//free(&argv);
+	if (argc == 1) { // argc only equal to 1, meaning only ./myshell was executed, accept user input as commands
+		while(1) { //perform endless loop until shell detects an EOF condition such as 'Ctrl+D' or user types 'quit'
+			printf("dillon@shell> "); // print prompt
+			if (getcwd(cwd, sizeof(cwd)) != NULL) { // print pathname of current directory (NOT A TEST ACTUALLY NEED AS PART OF PROGRAM SO DON'T MACRO OUT)
+				printf("- %s\n", cwd); // print pathname of current directory
+			}
+			// Read command from standard input, exit on EOF conditions (Ctrl + D & "exit")
+			if (fgets(line, sizeof(line), stdin) == NULL) break; // get command from stdin, breaks if Ctrl + D entered
+			fprintf(stdout, "Command entered: %s\n", line); //print command to stdout
+			if (line[strlen(line)-1] == '\n') { // remove trailing newline if there is one
+				line[strlen(line)-1] = '\0'; // replace that newline with null
+			}
+
+			
+			int i = 0;
+			while (line[i] != '\0') {
+				printf("%c\n", line[i]);
+				i++;
+			}
+			printf("Home directory: %s\n", getenv("HOME")); // TEST
+
+			parseCommand(line, argv, &argc); // parse user command enterd
+
+			printf("ARGC: %d\n", argc); // TEST
+			i = 0;
+			while (argv[i] != '\0') {
+				printf("ARGV: %s\n", argv[i]);
+				i++;
+			}
+			
+			printf("Length of line entered: %lu\n", strlen(line));
+			
+			if (executeCommand(argv) == 0) break; // attempt to execute user command based off parsed arguments in argv
+		}
+	}
 	return 0;
 }
+
+
+
+
+
+
+
 
 /* Parse command read in from user, increment argc for each string in command */
 void parseCommand(char* command, char** argv, int *argc)
@@ -176,8 +188,7 @@ int executeCommand(char** argv) {
 		}
 		i++;
 	}
-
-	fprintf(stdout, "No recognizable command was found..reenter a proper command or type \"help\" for more information on proper commands.\n");
+	fprintf(stdout, "\nNo recognizable command was found..reenter a proper command or type \"help\" for more information on proper commands.\n\n");
 	return 1;
 }
 
@@ -290,7 +301,7 @@ int printDirContents() {
 int printEnvStrings() {
 	int i = 0;
 	while(environ[i] != NULL) {
-		fprintf(stdout, "%s\n", environ[i]);
+		printf("%s\n", environ[i]);
 		i++;
 	}
 	return 1; // return 1 for success
