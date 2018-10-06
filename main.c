@@ -42,12 +42,12 @@ int quitTerm();
 // 	{ "pause", pauseShell },
 // 	{ "quit", quitTerm }
 // };
-
+char cwd[100]; // used for printing current working directory after each command (cd'ing to new dir etc.)
 
 int main(int argc, char *argv[100]) {
 	//initialize variables needed
 	char line[100]; // line to parse from user (separate commands from arguments)
-	char cwd[100]; // used for printing current working directory after each command (cd'ing to new dir etc.)
+	
 	//char* argv[100]; // holds all arguments to be passed to commands
 	//argc = 0; // argc is 0 before line read in
 	//int argc; // keeps track of number of arguments passed in (argument count)
@@ -82,7 +82,7 @@ int main(int argc, char *argv[100]) {
 		while(1) { //perform endless loop until shell detects an EOF condition such as 'Ctrl+D' or user types 'quit'
 			printf("dillon@shell> "); // print prompt
 			if (getcwd(cwd, sizeof(cwd)) != NULL) { // print pathname of current directory (NOT A TEST ACTUALLY NEED AS PART OF PROGRAM SO DON'T MACRO OUT)
-				printf("- %s\n", cwd); // print pathname of current directory
+				printf("- (%s) : ", cwd); // print pathname of current directory
 			}
 			// Read command from standard input, exit on EOF conditions (Ctrl + D & "exit")
 			if (fgets(line, sizeof(line), stdin) == NULL) break; // get command from stdin, breaks if Ctrl + D entered
@@ -255,8 +255,11 @@ int cdTo(char **argv) {
 	//char* env = getenv("HOME");
 	if (argv[1] == '\0') { // if no second argument and just cd was entered
 		fprintf(stdout, "ONLY cd entered, attempting to switch to home directory..\n");
-	if (!(chdir(pwd->pw_dir))) { // switch to home directory using environment variable HOME
-			fprintf(stdout, "\nSuccessful cd to HOME!\n");
+		if (!(chdir(pwd->pw_dir))) { // switch to home directory using environment variable HOME
+			if (getcwd(cwd, sizeof(cwd)) != NULL) { // print pathname of current directory (NOT A TEST ACTUALLY NEED AS PART OF PROGRAM SO DON'T MACRO OUT)
+				printf("\nGOT CWD IN CD FUNCTION\n"); // print pathname of current directory
+			}
+			fprintf(stdout, "\nSuccessful cd to HOME directory: %s\n\n", cwd);
 			return 1; // return 1 for successful cd to HOME
 		} else {
 			fprintf(stderr, "cd: That directory does not exist..\n"); // print that directory does not exist - also means chdir couldn't chdir properly
@@ -265,7 +268,10 @@ int cdTo(char **argv) {
 	}
 
 	if (!(chdir(argv[1]))) { // chdir returned 0, successful cd
-		fprintf(stdout, "\nSuccessful cd!\n"); //print success
+		if (getcwd(cwd, sizeof(cwd)) != NULL) { // print pathname of current directory (NOT A TEST ACTUALLY NEED AS PART OF PROGRAM SO DON'T MACRO OUT)
+			printf("\nGOT CWD IN CD FUNCTION\n"); // print pathname of current directory
+		}
+		fprintf(stdout, "\nSuccessful cd to: %s\n\n", cwd); //print success
 		return 1; // return 1 for success
 	} else { // otherwise chdir failed
 		fprintf(stderr, "cd: That directory does not exist..\n"); // print that directory does not exist - also means chdir couldn't chdir properly
@@ -301,7 +307,7 @@ int printDirContents() {
 int printEnvStrings() {
 	int i = 0;
 	while(environ[i] != NULL) {
-		printf("%s\n", environ[i]);
+		fprintf(stdout, "%s\n", environ[i]);
 		i++;
 	}
 	return 1; // return 1 for success
