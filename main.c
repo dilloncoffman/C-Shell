@@ -11,11 +11,9 @@
 #include <pwd.h> // for cd'ing into home directory
 
 extern char **environ; // for printing env strings/accessing dirs
-extern int errno; // for error handling
+extern int errno; // for error handling, to be used in conjunction with strerror()
 
 /* function prototypes */
-//char* readCommand();
-//char** parseLine(char *line);
 void parseCommand(char* command, char** params, int *argc);
 int executeCommand(char** argv);
 int cdTo(char** argv);
@@ -47,10 +45,6 @@ char cwd[100]; // used for printing current working directory after each command
 int main(int argc, char *argv[100]) {
 	//initialize variables needed
 	char line[100]; // line to parse from user (separate commands from arguments)
-	
-	//char* argv[100]; // holds all arguments to be passed to commands
-	//argc = 0; // argc is 0 before line read in
-	//int argc; // keeps track of number of arguments passed in (argument count)
 	int status; // used when creating other processes to determine if they executed or failed
 
 	if (argc >= 2) { // if argc at this point equals greater than or equal to 2 then we know we need to read commands from a file instead of user input
@@ -93,26 +87,26 @@ int main(int argc, char *argv[100]) {
 
 			
 			int i = 0;
-			while (line[i] != '\0') {
+			while (line[i] != '\0') { // (FOR TESTING) prints each character of the user-entered command
 				printf("%c\n", line[i]);
 				i++;
 			}
-			printf("Home directory: %s\n", getenv("HOME")); // TEST
+			
+			printf("Home directory: %s\n", getenv("HOME")); // (FOR TESTING)
 
 			parseCommand(line, argv, &argc); // parse user command enterd
 
-			printf("ARGC: %d\n", argc); // TEST
-			i = 0;
+			printf("ARGC: %d\n", argc); // (FOR TESTING)
+			i = 0; // (FOR TESTING) prints out each parsed C-string from user-entered command on a new line
 			while (argv[i] != '\0') {
 				printf("ARGV: %s\n", argv[i]);
 				i++;
 			}
 			
-			printf("Length of line entered: %lu\n", strlen(line));
-			
 			if (executeCommand(argv) == 0) break; // attempt to execute user command based off parsed arguments in argv
 		}
 	}
+	//free(homeDir); // (FOR TESTING) free malloced memory to hold the home directory used in testing printing it out
 	return 0;
 }
 
@@ -146,7 +140,7 @@ int executeCommand(char** argv) {
 	// while (argv[i] != '\0') { // while argv is not equal to NULL character, search for any operators (redirection, piping)
 
 	// }
-	while (argv[i] != '\0') {
+	//while (argv[i] != '\0') {
 		if (strcmp(argv[0], "cd") == 0) { // if cd command entered
 			//if (argv[1]) { // if argv 1 holds a value, attempt to cdTo that directory
 				fprintf(stdout, "Entered cd internal command function call in EXECUTE..\n");
@@ -186,8 +180,8 @@ int executeCommand(char** argv) {
 			fprintf(stdout, "Entered quit internal command function call in EXECUTE..\n");
 			return quitTerm(); // will quit the shell program by returning 0
 		}
-		i++;
-	}
+		// i++;
+	//}
 	fprintf(stdout, "\nNo recognizable command was found..reenter a proper command or type \"help\" for more information on proper commands.\n\n");
 	return 1;
 }
@@ -247,7 +241,7 @@ int printDirContents() {
 	while ((s = readdir(dir)) != NULL) { // readdir() returns pointer to next directory entry until it reaches end of the directory(NULL) or an error
 		fprintf(stdout, "%s\t", s->d_name); // print the directory/file name in the current directory
 	}
-	printf(stdout, "\n\n"); // print new lines after printing out contents of current directory for readability
+	printf("\n\n"); // print new lines after printing out contents of current directory for readability
 
 	closedir(dir); // close dir
 	return 1; // return 1 for success
@@ -294,5 +288,6 @@ int pauseShell() {
 
 /* Quits the shell by returning 0 */
 int quitTerm() {
+	printf("Shutting down dillon's shell..\n"); // (FOR TESTING)
 	return 0;
 }
