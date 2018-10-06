@@ -80,9 +80,9 @@ int main(int argc, char *argv[100]) {
 	}
 	if (argc == 1) { // argc only equal to 1, meaning only ./myshell was executed, accept user input as commands
 		while(1) { //perform endless loop until shell detects an EOF condition such as 'Ctrl+D' or user types 'quit'
-			printf("dillon@shell> "); // print prompt
+			printf("dillon@shell "); // print prompt
 			if (getcwd(cwd, sizeof(cwd)) != NULL) { // print pathname of current directory (NOT A TEST ACTUALLY NEED AS PART OF PROGRAM SO DON'T MACRO OUT)
-				printf("- (%s) : ", cwd); // print pathname of current directory
+				printf("(%s) >> ", cwd); // print pathname of current directory
 			}
 			// Read command from standard input, exit on EOF conditions (Ctrl + D & "exit")
 			if (fgets(line, sizeof(line), stdin) == NULL) break; // get command from stdin, breaks if Ctrl + D entered
@@ -294,10 +294,11 @@ int printDirContents() {
 		return 0; // return 0 for failure
 	}
 
+	printf("\n"); // print newline before printing directory contents for readability purposes
 	while ((s = readdir(dir)) != NULL) { // readdir() returns pointer to next directory entry until it reaches end of the directory(NULL) or an error
 		fprintf(stdout, "%s\t", s->d_name); // print the directory/file name in the current directory
 	}
-	fprintf(stdout, "\n"); // print new line after printing out contents of current directory for readability
+	printf(stdout, "\n\n"); // print new lines after printing out contents of current directory for readability
 
 	closedir(dir); // close dir
 	return 1; // return 1 for success
