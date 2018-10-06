@@ -162,6 +162,14 @@ int executeCommand(char** argv) {
 			fprintf(stdout, "Entered env internal command function call in EXECUTE..\n");
 			return printEnvStrings(); // returns int for if function call successful or not
 		}
+		if (strcmp(argv[0], "echo") == 0) {
+			fprintf(stdout, "Entered echo internal command function call in EXECUTE..\n");
+			return echoUserInput(argv); // will quit the shell program by returning 0
+		}
+		if (strcmp(argv[0], "pause") == 0) {
+			fprintf(stdout, "Entered pause internal command function call in EXECUTE..\n");
+			return pauseShell(); // will quit the shell program by returning 0
+		}
 		if (strcmp(argv[0], "quit") == 0) {
 			fprintf(stdout, "Entered quit internal command function call in EXECUTE..\n");
 			return quitTerm(); // will quit the shell program by returning 0
@@ -254,13 +262,13 @@ int cdTo(char **argv) {
 	}
 }
 
-//clrScreen
+/* Clears shell screen */
 int clrScreen() {
-	printf("\033[H\033[2J");
+	printf("\033[H\033[2J"); // trick to clear screen
 	return 1; // return 1 for clear success
 }
 
-// printDirContents
+/* Prints the contents of the current directory/Also supports output redirection! */
 int printDirContents() {
 	struct dirent *s; // pointer to directory entry
 	DIR *dir = opendir("."); // open directory (opendir() returns pointer of DIR type)
@@ -270,34 +278,36 @@ int printDirContents() {
 	}
 
 	while ((s = readdir(dir)) != NULL) { // readdir() returns pointer to next directory entry until it reaches end of the directory(NULL) or an error
-		printf("%s\t", s->d_name); // print the directory/file name in the current directory
+		fprintf(stdout, "%s\t", s->d_name); // print the directory/file name in the current directory
 	}
-	printf("\n"); // print new line after printing out contents of current directory
+	fprintf(stdout, "\n"); // print new line after printing out contents of current directory for readability
 
 	closedir(dir); // close dir
 	return 1; // return 1 for success
 }
-//printEnvStrings
+
+/* Prints all environment variables to stdout/Also supports output redirection! */
 int printEnvStrings() {
 	int i = 0;
-  char *s = *environ;
-
-  for (; s; i++) {
-    printf("%s\n", s);
-    s = *(environ+i);
-  }
-	return 1; // return 1 for success
-}
-//echoUserInput
-int echoUserInput(char** input) {
-	int i = 0;
-	while(input != NULL) {
-		printf("%s", input[i]);
+	while(environ[i] != NULL) {
+		fprintf(stdout, "%s\n", environ[i]);
+		i++;
 	}
 	return 1; // return 1 for success
 }
 
-/* Prints user manual if just 'help' entered, if 'help cd' entered then a prompt as to how to use that internal command is printed to screen */
+/* Echoes whatever the user entered back to screen/Also supports output redirection! */
+int echoUserInput(char** input) {
+	int i = 1; // i equal to one so as not to print the actual 'echo' part of command entered
+	while(input[i] != '\0') { // while input (the argv array) is not equal to null
+		fprintf(stdout, "%s ", input[i]); // print everything user entered except for 'echo' part
+		i++; // increment i
+	}
+	fprintf(stdout, "\n"); // print newline at end for readability
+	return 1; // return 1 for success
+}
+
+/* Prints user manual if just 'help' entered, if 'help cd' entered then a prompt as to how to use that internal command is printed to screen/Also supports output redirection! */
 int displayManual() {
 	printf("help screen :)\n");
 	//FILE *readMe_ptr = fopen("readme.txt", "r");
@@ -310,6 +320,8 @@ int displayManual() {
 /* Pauses the shell's execution until the user presses Enter */
 int pauseShell() {
 	fflush(stdin); // necessary before using gets()/getchar() to ensure no garbage included
+	fprintf(stdout, "Press Enter to continue...\n"); // prompt user to press Enter to resume shell execution
+	getchar(); // gets a character from stdin, in this case wants Enter pressed before returning 1 below
     return 1; // for success
 }
 
