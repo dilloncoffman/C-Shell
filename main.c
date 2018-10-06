@@ -15,7 +15,7 @@ extern int errno; // for error handling, to be used in conjunction with strerror
 
 /* function prototypes */
 void parseCommand(char* command, char** params, int *argc);
-int executeCommand(char** argv);
+int executeCommand(char** argv, int *argc);
 int cdTo(char** argv);
 int clrScreen();
 int printDirContents();
@@ -65,7 +65,7 @@ int main(int argc, char *argv[100]) {
 						inputFileContent[strlen(inputFileContent)-1] = '\0'; // replace that newline character with null character
 					}
 					parseCommand(inputFileContent, argv, &argc); // parse line from file
-					if (executeCommand(argv) == 0) break; // attempt to execute line from file based off parsed arguments in argv
+					if (executeCommand(argv, &argc) == 0) break; // attempt to execute line from file based off parsed arguments in argv
 				}
 			}
 		}
@@ -103,7 +103,7 @@ int main(int argc, char *argv[100]) {
 				i++;
 			}
 			
-			if (executeCommand(argv) == 0) break; // attempt to execute user command based off parsed arguments in argv
+			if (executeCommand(argv, &argc) == 0) break; // attempt to execute user command based off parsed arguments in argv
 		}
 	}
 	//free(homeDir); // (FOR TESTING) free malloced memory to hold the home directory used in testing printing it out
@@ -122,23 +122,22 @@ void parseCommand(char* command, char** argv, int *argc)
 {       
 	int i = 0;
 	*(argc) = 0; // make sure for each command, argc is set back to 0
-    for(i = 0; i < 100; i++) {
+    for (i = 0; i < 100; i++) {
         argv[i] = strsep(&command, " "); // seperate each string by space and store that string in the respective index of params C-String array
-        if(argv[i] == NULL) break;
+        if (argv[i] == NULL) break;
 		(*argc)++; // increment argc for every string in the command
     }
 	argv[strlen(*argv) + 1] = NULL; // set first location in array after C-Strings to NULL (necessary for passing argv array to execvp() system call)
 }
 
 /* Execute on parsed command, account for different operators, internal, and external commands */
-int executeCommand(char** argv) {
+int executeCommand(char** argv, int *argc) {
 	int i = 0;
 	if (argv[0] == '\0') { // make sure some type of command entered (doesn't matter valid or invalid at this point because if it's an invalid command will be checked later)
 		fprintf(stderr, "No command entered!\n"); // print error to stderr
 		return 0; // return back to main while loop
 	}
 	// while (argv[i] != '\0') { // while argv is not equal to NULL character, search for any operators (redirection, piping)
-
 	// }
 	//while (argv[i] != '\0') {
 		if (strcmp(argv[0], "cd") == 0) { // if cd command entered
@@ -185,16 +184,23 @@ int executeCommand(char** argv) {
 
 	/* Otherwise, everything else must be interpreted to be an external command */
 	int pid = fork(); // fork current process
+	int status = 0; // set int status to wait for child process to complete
 	if (pid >= 0) { // if no error in forking
 		if (pid == 0) { // Child Process
-			if (execvp(argv[0], argv) < 0) { // if the execvp call returns anything less than 0
+			// is redirection?
+			// is piping?
+			if (execvp(argv[0], argv) < 0) { // is normal command, if the execvp call returns anything less than 0
 				fprintf(stdout, "Error executing child process: %s\n", strerror(errno)); // there was an error, print errno, which is also set by execvp to indicate the kind of error
 				exit(0); // does not exit shell, only exits child process
 			}
-		} else { // Parent Process
-			int status = 0; // set int status to wait for child process to complete
+		} else if (strcmp(argv[*argc-1], "&") == 0) { // Parent Process w/ background execution
+			fprintf(stdout, "RUNNING IN BACKGROUND\n"); // (FOR TESTING)
+			waitpid(pid, &status, 0); // continues execution
+			fprintf(stdout, "FINISHED RUNNING IN BACKGROUND\n");
+			return 1;
+		} else { // Parent Process w/ NO background execution
 			wait(&status);
-			fprintf(stdout, "Executing external command: \"%s\" may or may not have been successful.. do you see an error reported directly above this line? Or what you would expect from an external command such as \"ls\"? If you see nothing printed above, then you may have used a command like \"mkdir\" or \"touch\", in those cases check your current directory for the new directories/files you may have created :)\n", argv[0]); // (FOR TESTING)
+			fprintf(stdout, "\nExecuting external command: \"%s\" may or may not have been successful.. do you see an error reported directly above this line? Or what you would expect from an external command such as \"ls\"? If you see nothing printed above, then you may have used a command like \"mkdir\" or \"touch\", in those cases check your current directory for the new directories/files you may have created :)\n", argv[0]); // (FOR TESTING)
 			return 1; // executing external command was successful
 		}
 	} else {
