@@ -1,2 +1,8 @@
-cd
+cd newdir
 dir
+env
+echo the potatoes are back
+cd ..
+dir
+echo almost done
+quit

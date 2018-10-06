@@ -28,20 +28,20 @@ int pauseShell();
 int quitTerm();
 
 /* structs */
-struct InternalCommand {
-	char *commandName;
-	int (*func)(char**);
-};
-struct InternalCommand commands[] = {
-	{ "cd", cdTo },
-	{ "clr", clrScreen },
-	{ "dir", printDirContents },
-	{ "environ", printEnvStrings },
-	{ "echo", echoUserInput },
-	{ "help", displayManual },
-	{ "pause", pauseShell },
-	{ "quit", quitTerm }
-};
+// struct InternalCommand {
+// 	char *commandName;
+// 	int (*func)(char**);
+// };
+// struct InternalCommand commands[] = {
+// 	{ "cd", cdTo },
+// 	{ "clr", clrScreen },
+// 	{ "dir", printDirContents },
+// 	{ "environ", printEnvStrings },
+// 	{ "echo", echoUserInput },
+// 	{ "help", displayManual },
+// 	{ "pause", pauseShell },
+// 	{ "quit", quitTerm }
+// };
 
 
 int main(int argc, char *argv[100]) {
@@ -67,6 +67,9 @@ int main(int argc, char *argv[100]) {
 			fprintf(stdout, "Input file: %s opened successfully! Ready to execute commands from input file!\n", inputFileName);
 			while(!feof(inputFile_ptr)) {
 				if(fgets(inputFileContent, 200, inputFile_ptr)) {
+					if (inputFileContent[strlen(inputFileContent)-1] == '\n') { // remove trailing newline if there is one in command
+						inputFileContent[strlen(inputFileContent)-1] = '\0'; // replace that newline character with null character
+					}
 					parseCommand(inputFileContent, argv, &argc); // parse line from file
 					if (executeCommand(argv) == 0) break; // attempt to execute line from file based off parsed arguments in argv
 				}
@@ -144,9 +147,6 @@ int executeCommand(char** argv) {
 
 	// }
 	while (argv[i] != '\0') {
-		if (commands[i].commandName == argv[0]) { // if an internal command
-			printf("Command entered was right");
-		}
 		if (strcmp(argv[0], "cd") == 0) { // if cd command entered
 			//if (argv[1]) { // if argv 1 holds a value, attempt to cdTo that directory
 				fprintf(stdout, "Entered cd internal command function call in EXECUTE..\n");
@@ -250,7 +250,7 @@ int cdTo(char **argv) {
     struct passwd* pwd = getpwuid(uid); // getpwuid (as per the man page) "searches the password database for the given login name, useruid, or user uuid". It stores the results of the search in a pwd structure to be used. While this is more inefficient than just chdir(getenv("HOME")), I couldn't get that to work so this is the alternative
 
 	if (argv == NULL) { // if argv is null
-		fprintf(stderr, "\nError: cd failed1..\n"); // print an error
+		fprintf(stderr, "\nError: cd failed..\n"); // print an error
 	}
 	//char* env = getenv("HOME");
 	if (argv[1] == '\0') { // if no second argument and just cd was entered
