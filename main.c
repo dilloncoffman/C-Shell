@@ -192,57 +192,6 @@ int executeCommand(char** argv) {
 	return 1;
 }
 
-// char* readCommand() {
-// 	char *command = NULL;
-// 	size_t buffCapacity = 0;
-// 	ssize_t nread;
-// 	int i = 0;
-
-// 	while ((nread = getline(&command, &buffCapacity, stdin)) != -1) {
-// 		printf("Retrieved line of length %zu:\n", nread);
-// 		printf("Command: %s", command);
-// 		if (command[i-1] == '\n') {
-// 			break;
-// 		}
-// 		fwrite(command, nread, 1, stdout);
-// 		i++;
-// 	}
-// 	//command[i-1]= '\n';
-// 	return command;
-// }
-
-// char** parseLine(char *line) {
-// 	int i = 0;
-// 	int bufferSize = PARSE_BUFF_SIZE; // define bufferSize to use for parsing line
-// 	char** tokens = malloc(sizeof(char) * bufferSize); // all tokenized arguments to be returned to argv
-// 	char* token; // individual token placed in tokens to be returned
-
-// 	if (!tokens) { // check if malloc failed
-// 		fprintf(stderr, "Error: Failed to allocate memory!\n"); // print error
-// 		exit(EXIT_FAILURE); // exit
-//   	}
-
-//   	token = strtok(line, PARSE_DELIMS); // get token
-
-// 	while (token != NULL) {
-// 		tokens[i] = token;
-// 		i++;
-// 		if (i >= bufferSize) { // if i excedes bufferSize, we know we have to allocate more space for tokens
-// 			bufferSize += PARSE_BUFF_SIZE; // increase the bufferSize
-// 			tokens = realloc(tokens, sizeof(char*) * bufferSize); // reallocate memory for tokens using new bufferSize
-// 			if (!tokens) { // check if realloc failed
-// 				fprintf(stderr, "Error: Failed to reallocate memory!\n"); // print error
-// 				exit(EXIT_FAILURE); // exit
-// 			}
-// 			token = strtok(NULL, PARSE_DELIMS); // reset token to be used
-// 		}
-// 	}
-
-
-//   	tokens[i] = NULL; // set last token to null (this should place NULL at end of the C-string array)
-//   	return tokens; // return tokens which is just everything but delims to be used
-// }
-
 /* Internal Commands */
 //cdTo
 int cdTo(char **argv) {
