@@ -91,7 +91,7 @@ int main(int argc, char *argv[100]) {
 				printf("%c\n", line[i]);
 				i++;
 			}
-			
+
 			printf("Home directory: %s\n", getenv("HOME")); // (FOR TESTING)
 
 			parseCommand(line, argv, &argc); // parse user command enterd
@@ -182,6 +182,33 @@ int executeCommand(char** argv) {
 		}
 		// i++;
 	//}
+
+	/* Otherwise, everything else must be interpreted to be an external command */
+	int pid = fork(); // fork current process
+	if (pid >= 0) { // if no error in forking
+		if (pid == 0) { // Child Process
+			if (execvp(argv[0], argv) < 0) { // if the execvp call returns anything less than 0
+				fprintf(stdout, "Error executing child process: %s\n", strerror(errno)); // there was an error, print errno, which is also set by execvp to indicate the kind of error
+				exit(0); // does not exit shell, only exits child process
+			}
+		} else { // Parent Process
+			int status = 0; // set int status to wait for child process to complete
+			wait(&status);
+			fprintf(stdout, "Executing external command: \"%s\" may or may not have been successful.. do you see an error reported directly above this line? Or what you would expect from an external command such as \"ls\"? If you see nothing printed above, then you may have used a command like \"mkdir\" or \"touch\", in those cases check your current directory for the new directories/files you may have created :)\n", argv[0]); // (FOR TESTING)
+			return 1; // executing external command was successful
+		}
+	} else {
+		puts("Forking error!");
+	}
+
+
+
+
+
+
+
+
+
 	fprintf(stdout, "\nNo recognizable command was found..reenter a proper command or type \"help\" for more information on proper commands.\n\n");
 	return 1;
 }
