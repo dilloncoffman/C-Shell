@@ -9,6 +9,12 @@
     basic internal as well as external commands to gain information 
     about the computer's system. It also allows the user 
     to execute processes in the background and execute batch files.
+    Executing a process in the background is creating another process
+    which is essentially a copy of the current one and then not waiting
+    for that process to finish before continuing back to myshell.
+    Executing a batchfile just means instead of the user typing commands
+    in, the commands are read line by line from a text file and then
+    executed on.
 
 
     There are eight internal commands:
@@ -32,8 +38,11 @@
     There are a variety of external commands:
         Your system contains a variety of commands to execute in your
         regular shell. These commands include 'ls, pwd, mkdir, rm, cat'
-        among many other commands. You'll find you are also able to 
-        execute these commands within myshell. Give it a shot! :)
+        among many other commands. By typing 'ls' for example you'll 
+        see it prints the contents of the current directory you are cd'ed 
+        into. (Note: the dir internal command also accomplishes this)
+        You'll find you are also able to execute these commands within 
+        myshell. Give it a shot! :)
 
     To execute a program in the background:
         Within myshell, type './myshell &' to execute yet another myshell in 

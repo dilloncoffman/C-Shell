@@ -6,8 +6,10 @@ int main(int argc, char* argv[100]) {
 	int status; // used when creating other processes to determine if they executed or failed
 	
 	if (argc >= 2) { // if argc at this point equals greater than or equal to 2 then we know we need to read commands from a file instead of user input
+		#ifdef TESTING
 		printf("Argc at start of program before any user input: %d\n\n", argc);
 		printf("Argv at start of program before any user input (if this exists means we must execute commands from commands in some input file): %s\n\n", argv[1]);
+		#endif
 		char* inputFileName = argv[1]; // save input file name to used (this is to ensure the name is not lost through executions and can be used in printing statements (for testing or error logging) later on)
 		FILE *inputFile_ptr = fopen(inputFileName, "r"); // attempt to open file for reading
 		char inputFileContent[200];
@@ -16,7 +18,9 @@ int main(int argc, char* argv[100]) {
 			return 0; // end program
 		} else { // file opened successfully
 			// read file and line by line execute it's commands
+			#ifdef TESTING
 			fprintf(stdout, "Input file: %s opened successfully! Ready to execute commands from input file!\n", inputFileName);
+			#endif
 			while(!feof(inputFile_ptr)) {
 				if(fgets(inputFileContent, 200, inputFile_ptr)) {
 					if (inputFileContent[strlen(inputFileContent)-1] == '\n') { // remove trailing newline if there is one in command
@@ -27,7 +31,9 @@ int main(int argc, char* argv[100]) {
 				}
 			}
 		}
+		#ifdef TESTING
 		fprintf(stdout, "\nSuccessfully executed commands from input file: %s - now exiting..\n", inputFileName);
+		#endif
 		return 0; // at end of executing commands from input file, exit shell
 	}
 	if (argc == 1) { // argc only equal to 1, meaning only ./myshell was executed, accept user input as commands
@@ -42,18 +48,21 @@ int main(int argc, char* argv[100]) {
 			if (line[strlen(line)-1] == '\n') { // remove trailing newline if there is one
 				line[strlen(line)-1] = '\0'; // replace that newline with null
 			}
-
-			
 			int i = 0;
+			#ifdef TESTING
 			while (line[i] != '\0') { // (FOR TESTING) prints each character of the user-entered command
 				printf("%c\n", line[i]);
 				i++;
 			}
 
 			printf("Home directory: %s\n", getenv("HOME")); // (FOR TESTING)
+			#endif
+		
+			
 
 			argv = parseCommand(line, argv, &argc); // parse user command entered
-
+			
+			#ifdef TESTING
 			printf("ARGC: %d\n", argc); // (FOR TESTING)
 			i = 0; // (FOR TESTING) prints out each parsed C-string from user-entered command on a new line
 			while (argv[i] != '\0') {
@@ -61,6 +70,7 @@ int main(int argc, char* argv[100]) {
 				i++;
 			}
 			printf("\n"); // (FOR TESTING) print newline for readability
+			#endif
 			
 			if (executeCommand(argv, &argc) == 0) break; // attempt to execute user command based off parsed arguments in argv
 		}
@@ -87,9 +97,13 @@ int executeCommand(char** argv, int *argc) {
 
 	/* Check for special operators <, >, >>, &, | */
 	while(argv[i] != NULL) { // while argv is not equal to NULL, search for any operators (redirection, piping)
+		#ifdef TESTING
 		printf("argv in execute function: %s\n", argv[i]); // (FOR TESTING)
+		#endif
 		if (strcmp(argv[i], "<") == 0) {
+			#ifdef TESTING
 			printf("< ENCOUNTERED!\n");
+			#endif
 			argv[i] = strcpy(argv[i], "");
 			(*argc)--; // decrement argc since we don't want < to be included
 			inputRedirectionEncountered = 1; // flip var that < was encountered to true (1)
@@ -98,7 +112,9 @@ int executeCommand(char** argv, int *argc) {
 			continue;
 		}
 		if (strcmp(argv[i], ">") == 0) {
+			#ifdef TESTING
 			printf("> ENCOUNTERED!\n");
+			#endif
 			argv[i] = strcpy(argv[i], "");
 			(*argc)--;
 			outputRedirectionEncountered = 1; // flip var that > was encountered to true (1)
@@ -107,7 +123,9 @@ int executeCommand(char** argv, int *argc) {
 			continue;
 		}
 		if (strcmp(argv[i], ">>") == 0) {
+			#ifdef TESTING
 			printf(">> ENCOUNTERED!\n");
+			#endif
 			argv[i] = strsep(&argv[i], ">>");
 			(*argc)--;
 			outputRedirectionEncountered = 1; // flip var that >> was encountered to true (1)
@@ -116,7 +134,9 @@ int executeCommand(char** argv, int *argc) {
 			continue;
 		}
 		if (strcmp(argv[i], "|") == 0) {
+			#ifdef TESTING
 			printf("| ENCOUNTERED!\n");
+			#endif
 			argv[i] = strcpy(argv[i], "");
 			(*argc)--;
 			pipeEncountered = 1; // flip var that > was encountered to true (1)
@@ -149,7 +169,9 @@ int executeCommand(char** argv, int *argc) {
 			} else { // Parent
 				int status = 0;
 				wait(&status); // wait for child process to finish executing
+				#ifdef TESTING
 				fprintf(stdout, "\nSuccessful input redirection!\n"); // (FOR TESTING)
+				#endif
 				return 1;
 			}
 		}
@@ -173,7 +195,9 @@ int executeCommand(char** argv, int *argc) {
 			} else { // Parent
 				int status = 0;
 				wait(&status); // wait for child process to finish executing
+				#ifdef TESTING
 				fprintf(stdout, "\nSuccessful output redirection!\n"); // (FOR TESTING)
+				#endif
 				return 1;
 			}
 		}
@@ -208,37 +232,51 @@ int executeCommand(char** argv, int *argc) {
 	
 	/* Check if command entered was an internal command, if it was then make a function call to the specific function */
 	if (strcmp(argv[0], "cd") == 0) { // if cd command entered
-		//if (argv[1]) { // if argv 1 holds a value, attempt to cdTo that directory
-			fprintf(stdout, "Entered cd internal command function call in EXECUTE..\n");
-			return cdTo(argv); // return result of cdTo command (1 is successful, 0 is not)
-		//}
+		#ifdef TESTING
+		fprintf(stdout, "Entered cd internal command function call in EXECUTE..\n");
+		#endif
+		return cdTo(argv); // return result of cdTo command (1 is successful, 0 is not)
 	}
 	if(strcmp(argv[0], "help") == 0) { // if help command entered
+		#ifdef TESTING
 		fprintf(stdout, "Entered help internal command function call in EXECUTE..\n");
+		#endif
 		return help(argv, argc); // return result of help command (1 is successful, 0 is not)
 	}
 	if (strcmp(argv[0], "clear") == 0) {
+		#ifdef TESTING
 		fprintf(stdout, "Entered clear internal command function call in EXECUTE..\n");
+		#endif
 		return clrScreen(); // return result of clear command (1 is successful, 0 is not)
 	}
 	if (strcmp(argv[0], "dir") == 0) {
+		#ifdef TESTING
 		fprintf(stdout, "Entered dir internal command function call in EXECUTE..\n");
+		#endif
 		return printDirContents(); // return result of dir command (1 is successful, 0 is not)
 	}
 	if (strcmp(argv[0], "env") == 0) {
+		#ifdef TESTING
 		fprintf(stdout, "Entered env internal command function call in EXECUTE..\n");
+		#endif
 		return printEnvStrings(); // return result of env command (1 is successful, 0 is not)
 	}
 	if (strcmp(argv[0], "echo") == 0) {
+		#ifdef TESTING
 		fprintf(stdout, "Entered echo internal command function call in EXECUTE..\n");
+		#endif
 		return echoUserInput(argv); // return result of echo command (1 is successful, 0 is not)
 	}
 	if (strcmp(argv[0], "pause") == 0) {
+		#ifdef TESTING
 		fprintf(stdout, "Entered pause internal command function call in EXECUTE..\n");
+		#endif
 		return pauseShell(); // return result of pause command (1 is successful, 0 is not)
 	}
 	if (strcmp(argv[0], "quit") == 0) {
+		#ifdef TESTING
 		fprintf(stdout, "Entered quit internal command function call in EXECUTE..\n");
+		#endif
 		return quitTerm(); // will quit the shell program by returning 0
 	}
 
@@ -246,7 +284,9 @@ int executeCommand(char** argv, int *argc) {
 	struct stat buffer; // struct stat from header <sys/stat.h> from man pages
 	int exist = stat(argv[0], &buffer); // read the file's attributes, the file being argv[0]
 	if (exist == 0) { // if stat returned 0 meaning that file specified by argv[0] exists and stat() was successful
-		fprintf(stdout, "File EXISTS! Attempt to execute it!\n"); // (FOR TESTING) prints that it exists
+		#ifdef TESTING
+		fprintf(stdout, "File EXISTS! Attempt to execute it!\n"); // (FOR TESTING) prints that it 
+		#endif
 		// execute file
 		pid_t pid = fork(); // fork current process
 		int status = 0; // set int status to wait for child process to complete
@@ -261,13 +301,14 @@ int executeCommand(char** argv, int *argc) {
 				}
 			} else { // Parent Process w/ NO background execution
 				if(!(strcmp(argv[*argc-1], "&") == 0)) waitpid(pid, &status, 0); // so long as last character is not &, don't wait for execution
-				//wait(&status);
-				//waitpid(pid, &status, 0);
+				#ifdef TESTING
 				fprintf(stdout, "\nExecuting external command: \"%s\" may or may not have been successful.. do you see an error reported directly above this line? Or what you would expect from an external command such as \"ls\"? If you see nothing printed above, then you may have used a command like \"mkdir\" or \"touch\", in those cases check your current directory for the new directories/files you may have created :)\n", argv[0]); // (FOR TESTING)
+				#endif
 				return 1; // executing external command was successful
 			}
 		} else {
-			puts("Forking error!");
+			fprintf(stdout, "FORKING ERROR!\n"); // print error
+			return 0; // for failure
 		}
 	}
 
@@ -277,9 +318,6 @@ int executeCommand(char** argv, int *argc) {
 	int status = 0; // set int status to wait for child process to complete
 	if (pid >= 0) { // if no error in forking
 		if (pid == 0) { // Child Process
-			// is redirection?
-			// is piping?
-			
 			if (execvp(argv[0], argv) < 0) { // is normal command, if the execvp call returns anything less than 0
 				fprintf(stdout, "\nError executing child process: %s\n", strerror(errno)); // there was an error, print errno, which is also set by execvp to indicate the kind of error
 				fprintf(stdout, "No recognizable command was found..reenter a proper external or internal command - type \"help\" for more information on proper commands.\n\n");
@@ -287,14 +325,15 @@ int executeCommand(char** argv, int *argc) {
 			}
 		} else { // Parent Process w/ NO background execution
 			if(!(strcmp(argv[*argc-1], "&") == 0)) waitpid(pid, &status, 0); // as long as last character is not &, wait for child process to finish
+			#ifdef TESTING
 			fprintf(stdout, "\nExecuting external command: \"%s\" may or may not have been successful.. do you see an error reported directly above this line? Or what you would expect from an external command such as \"ls\"? If you see nothing printed above, then you may have used a command like \"mkdir\" or \"touch\", in those cases check your current directory for the new directories/files you may have created :)\n", argv[0]); // (FOR TESTING)
+			#endif
 			return 1; // executing external command was successful
 		}
 	} else {
 		fprintf(stdout, "FORKING ERROR!\n");
 		return 0; // for failure
 	}
-
 	return 0; // return failure if something above does not return 1
 }
 
@@ -306,14 +345,19 @@ int cdTo(char **argv) {
 	if (argv == NULL) { // if argv is null
 		fprintf(stderr, "\nError: cd failed..\n"); // print an error
 	}
-	//char* env = getenv("HOME");
 	if (argv[1] == '\0') { // if no second argument and just cd was entered
+		#ifdef TESTING
 		fprintf(stdout, "ONLY cd entered, attempting to switch to home directory..\n");
+		#endif
 		if (!(chdir(pwd->pw_dir))) { // switch to home directory using environment variable HOME
 			if (getcwd(cwd, sizeof(cwd)) != NULL) { // print pathname of current directory (NOT A TEST ACTUALLY NEED AS PART OF PROGRAM SO DON'T MACRO OUT)
+				#ifdef TESTING
 				printf("\nGOT CWD IN CD FUNCTION\n"); // print pathname of current directory
+				#endif
 			}
+			#ifdef TESTING
 			fprintf(stdout, "\nSuccessful cd to HOME directory: %s\n\n", cwd);
+			#endif
 			return 1; // return 1 for successful cd to HOME
 		} else {
 			fprintf(stderr, "cd: That directory does not exist..\n"); // print that directory does not exist - also means chdir couldn't chdir properly
@@ -323,9 +367,13 @@ int cdTo(char **argv) {
 
 	if (!(chdir(argv[1]))) { // chdir returned 0, successful cd
 		if (getcwd(cwd, sizeof(cwd)) != NULL) { // print pathname of current directory (NOT A TEST ACTUALLY NEED AS PART OF PROGRAM SO DON'T MACRO OUT)
+			#ifdef TESTING
 			printf("\nGOT CWD IN CD FUNCTION\n"); // print pathname of current directory
+			#endif
 		}
+		#ifdef TESTING
 		fprintf(stdout, "\nSuccessful cd to: %s\n\n", cwd); //print success
+		#endif
 		return 1; // return 1 for success
 	} else { // otherwise chdir failed
 		fprintf(stderr, "cd: That directory does not exist..\n"); // print that directory does not exist - also means chdir couldn't chdir properly
@@ -362,8 +410,7 @@ int printDirContents() {
 int printEnvStrings() {
 	int i = 0;
 	while(environ[i] != NULL) {
-		fprintf(stdout, "\n%s", environ[i]);
-		i++;
+		fprintf(stdout, "\n%s", environ[i++]);
 	}
 	printf("\n\n"); // print new line for readability
 	return 1; // return 1 for success
@@ -384,7 +431,7 @@ int echoUserInput(char** input) {
 int help(char** commandToGetInfoAbout, int *argc) {
 	if (*argc == 1) { // if argc is only one, print the user manual (the readme.txt)
 		FILE *readMeFile_ptr;
-		readMeFile_ptr = fopen("readme.txt", "r");
+		readMeFile_ptr = fopen("readme", "r");
 		if (readMeFile_ptr == NULL) { // error check that the file actually opened
 			printf("Failed to open readme.txt for help!\n");
 		}
@@ -403,15 +450,7 @@ int help(char** commandToGetInfoAbout, int *argc) {
 	} else { // otherwise look for what internal command the user needs help with and print the info they need
 		int i = 0; // index of command to get info about after command of help
 		while (commandToGetInfoAbout[i] != '\0') {
-			if (strcmp(commandToGetInfoAbout[i], "\0") == 0) { // if no command specified to get info about
-				printf("Time to print readme.txt!\n");
-				// print readme.txt which is the user manual
-				//FILE *readMe_ptr = fopen("readme.txt", "r");
-				// allocate buffer for reading
-				// read file with fgets, go until EOF reached, print all to stdout
-				// close file
-				return 1;
-			} else if (strcmp(commandToGetInfoAbout[i], "cd") == 0) { // if command to get info about is cd
+			if (strcmp(commandToGetInfoAbout[i], "cd") == 0) { // if command to get info about is cd
 				// print a line about cd to the screen
 				printf("\n\"cd\" will change you into a new directory. Type 'cd dirName' to change into that directory. Or type just cd to change to the HOME directory.\n");
 				return 1; // for success
