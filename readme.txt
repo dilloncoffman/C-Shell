@@ -1,1 +1,51 @@
-Help to user to be printed by 'help'
+************ USER MANUAL **************
+
+    Everything is finished except for correctly 
+    executing I/O redirection and piping, although
+    as shown in the code, I attempted to solve these extensively.
+    See my Word doc README for more detail.
+
+    ABOUT myshell: this shell allows the user to enter some
+    basic internal as well as external commands to gain information 
+    about the computer's system. It also allows the user 
+    to execute processes in the background and execute batch files.
+
+
+    There are eight internal commands:
+        1.) "cd" dirName - will change directory into dirName,
+                           or if you just type "cd", will to the 
+                           system's home directory.
+        2.) "help" - will print out this user manual, or if you type
+                    "help commandName", it will print 
+                    some info about that commandName.
+        3.) "clear" - will clear the shell's screen.
+        4.) "dir" - will print the contents of the current directory,
+                    this includes files and other directories within it.
+        5.) "env" - will print out the system's environment variables.
+        6.) "echo" - will print to the screen what you type after it,
+                     for example 'echo sometext' will 
+                     print 'sometext' to the screen.
+        7.) "pause" - will pause the execution of the shell until
+                      Enter is pressed.
+        8.) "quit" - will exit the shell entirely.
+
+    There are a variety of external commands:
+        Your system contains a variety of commands to execute in your
+        regular shell. These commands include 'ls, pwd, mkdir, rm, cat'
+        among many other commands. You'll find you are also able to 
+        execute these commands within myshell. Give it a shot! :)
+
+    To execute a program in the background:
+        Within myshell, type './myshell &' to execute yet another myshell in 
+        the background of the currently executing one. You can see a list of
+        currently running processes by typing 'ps -a'. There you can see two
+        instances of myshell executing.
+    
+    To execute a program with a batchfile: 
+        When going to execute myshell, type './myshell input.txt' to execute
+        myshell with the commands given in input.txt. Notice that the output for 
+        these commands is printed to screen, despite them not being typed in and
+        executed by the user. These commands are read from the batchfile input.txt
+        and then executed on.
+
+************ END USER MANUAL ************
