@@ -58,3 +58,9 @@
         and then executed on.
 
 ************ END USER MANUAL ************
+
+To compile this project:
+    Download the source files from GitHub
+    cd into the project directory in your computer's default shell
+    Type 'make' and hit enter in your default shell
+    Then type './myshell' to run myshell. (or './myshell commands.txt' to execute a batchfile)
